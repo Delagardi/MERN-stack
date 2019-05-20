@@ -1,8 +1,10 @@
 const express = require('express');
 const route = express.Router();
-const { check, validationResult } = require('express-validator/check');
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const config = require('config');
+const { check, validationResult } = require('express-validator/check');
 
 const User = require('../../models/User');
 
@@ -14,16 +16,16 @@ route.post('/', [
     .isEmpty(),
   check('email', 'Please include valid email')
     .isEmail(),
-  check('password', 'Password must be ata least 6 characters long')
+  check('password', 'Password must be at least 6 characters long')
     .isLength({ min: 6 })
 ], 
 async (req, res) => {
-  const errors = validationResult(req);
+
+  const errors = await validationResult(req);
 
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
   const { name, email, password } = req.body;
 
   try {
@@ -53,11 +55,25 @@ async (req, res) => {
 
     user.password = await bcrypt.hash(password, salt);
 
-    await user.save();
+    await user.save();   
 
     // Send jsonwebtoken
-    
-    res.send('Users route'); 
+    const payload = {
+      user: {
+        id: user.id
+      }
+    }
+
+    jwt.sign(
+      payload, 
+      config.get('jwtSecret'),
+      { expiresIn: 360000 }, // in seconds
+      (error, token) => {
+        if (error) throw error;
+
+        res.json({ token });
+      }
+    );
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server error');
