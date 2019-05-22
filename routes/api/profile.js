@@ -119,6 +119,41 @@ route.get('/', async (req, res) => {
   }
 });
 
+// @route GET api/profile/user/:user_id
+// @desc Get profile by user id
+route.get('/user/:user_id', async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar']);
+    
+    if (!profile) {
+      return res.status(400).json({ msg: "There are no profile for such user"});
+    }
+
+    res.json(profile);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// @route api/profile
+// @desc Deleting profile, user and posts
+
+route.delete('/', auth, async(req, res) => {
+  try {
+    // Remove profile
+    await Profile.findOneAndDelete({ user: req.user.id });
+
+    // Remove user
+    await User.findOneAndDelete({ _id: req.user.id });
+    
+    res.json({ msg: "User deleted"});
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server error');
+  }
+
+});
 
 
 module.exports = route;
