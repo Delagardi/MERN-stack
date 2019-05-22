@@ -6,6 +6,7 @@ const { check, validationResult } = require('express-validator/check');
 const Profile = require('../../models/Profile');
 
 // @route GET api/profile/me
+// @desc Geting user profile
 
 route.get('/me', auth, async (req, res) => {
   try {
@@ -23,6 +24,7 @@ route.get('/me', auth, async (req, res) => {
 });
 
 // @route POST api/profile
+// @desc Creating or updating user profile
 
 route.post('/', [
     auth, 
@@ -102,5 +104,21 @@ route.post('/', [
       res.status(500).send('Server error');
     }
 });
+
+// @route GET api/profile
+// @desc Get all profiles
+
+route.get('/', async (req, res) => {
+  try {
+    const profiles = await Profile.find().populate('user', ['name', 'avatar']);
+
+    res.json(profiles);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server error');
+  }
+});
+
+
 
 module.exports = route;
