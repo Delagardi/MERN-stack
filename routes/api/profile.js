@@ -209,4 +209,32 @@ route.put('/experience', [auth,
   }
 });
 
+// @route api/profile/experience/:exp_id
+// @desc Deleting experience item from profile by ID
+
+route.delete(
+  '/experience/:exp_id', 
+  auth, 
+  async (req, res) => {
+    try {
+      const profile = await Profile.findOne({ user: req.user.id });
+
+      // Get removing index
+      const removingItem = profile.experience.find( (item) => item.id === req.params.exp_id );
+
+      if (removingItem === undefined) {
+        return res.status(400).send('There are no such experience item for this user');
+      }
+      
+      profile.experience.splice(removingItem._id, 1);
+
+      await profile.save();
+
+      res.json(profile);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  })
+
 module.exports = route;
