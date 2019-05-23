@@ -5,9 +5,8 @@ const { check, validationResult } = require('express-validator/check');
 
 const Profile = require('../../models/Profile');
 
-// @route GET api/profile/me
-// @desc Geting user profile
-
+// @route  GET api/profile/me
+// @desc   Geting user profile
 route.get('/me', auth, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id }).populate('user', ['name', 'avatar']);
@@ -23,9 +22,8 @@ route.get('/me', auth, async (req, res) => {
   }
 });
 
-// @route POST api/profile
-// @desc Creating or updating user profile
-
+// @route   POST api/profile
+// @desc    Creating or updating user profile
 route.post('/', [
     auth, 
     [
@@ -105,9 +103,8 @@ route.post('/', [
     }
 });
 
-// @route GET api/profile
-// @desc Get all profiles
-
+// @route   GET api/profile
+// @desc    Get all profiles
 route.get('/', async (req, res) => {
   try {
     const profiles = await Profile.find().populate('user', ['name', 'avatar']);
@@ -119,8 +116,8 @@ route.get('/', async (req, res) => {
   }
 });
 
-// @route GET api/profile/user/:user_id
-// @desc Get profile by user id
+// @route  GET api/profile/user/:user_id
+// @desc   Get profile by user id
 route.get('/user/:user_id', async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar']);
@@ -136,9 +133,8 @@ route.get('/user/:user_id', async (req, res) => {
   }
 });
 
-// @route api/profile
-// @desc Deleting profile, user and posts
-
+// @route   api/profile
+// @desc    Deleting profile, user and posts
 route.delete('/', auth, async(req, res) => {
   try {
     // Remove profile
@@ -152,8 +148,65 @@ route.delete('/', auth, async(req, res) => {
     console.error(error.message);
     res.status(500).send('Server error');
   }
-
 });
 
+// @route   api/profile/experience
+// @desc    Updating experience
+route.put('/experience', [auth, 
+  [
+    check('title', 'Titile is required')
+      .not()
+      .isEmpty(),
+    check('company', 'Company name is required')
+      .not()
+      .isEmpty(),
+    check('location', 'Location is required')
+      .not()
+      .isEmpty(),
+    check('from', 'Date of the begining is required')
+      .not()
+      .isEmpty()
+  ]
+], async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const {
+    title,
+    company,
+    location,
+    from,
+    to,
+    current,
+    description
+  } = req.body;
+
+  const newExperience = {
+    title,
+    company,
+    location,
+    from,
+    to,
+    current,
+    description
+  };
+
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+
+    profile.experience.unshift(newExperience);
+
+    await profile.save();
+
+    res.json(profile);
+  } catch (error) {
+    console.error(error.message);
+
+    res.status(500).send('Server error');
+  }
+});
 
 module.exports = route;
