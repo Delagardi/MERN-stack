@@ -1,4 +1,6 @@
 const express = require('express');
+const request = require('request');
+const config = require('config');
 const route = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator/check');
@@ -209,8 +211,8 @@ route.put('/experience', [auth,
   }
 });
 
-// @route api/profile/experience/:exp_id
-// @desc Deleting experience item from profile by ID
+// @route   api/profile/experience/:exp_id
+// @desc    Deleting experience item from profile by ID
 route.delete(
   '/experience/:exp_id', 
   auth, 
@@ -237,8 +239,8 @@ route.delete(
   }
 );
 
-// @route api/profile/education
-// @desc Add education in profile
+// @route   api/profile/education
+// @desc    Add education in profile
 route.put(
   '/education', 
   [
@@ -300,8 +302,8 @@ route.put(
   }
 );
 
-// @route api/profile/education/:educ_id
-// @desc Deleting education item
+// @route   api/profile/education/:educ_id
+// @desc    Deleting education item
 route.delete(
   '/education/:educ_id',
   auth,
@@ -327,5 +329,33 @@ route.delete(
     }
   }
 );
+
+// @route   api/profile/github/:username
+// @desc    Get user's repositories
+route.get(
+  '/github/:username',
+  async (req, res) => {
+    try {
+      const options = {
+        uri: `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${config.get('githubClientID')}&client_secret=${config.get(('githubClientSecret'))}`,
+        method: "GET",
+        headers: { "user-agent": "node.js" }
+      };
+
+      await request(options, (error, response, body) => {
+        if (error) console.error(error);
+
+        if (response.statusCode !== 200) {
+          return res.status(404).send('No github profile found');
+        }
+
+        res.json(JSON.parse(body));
+      });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+)
 
 module.exports = route;

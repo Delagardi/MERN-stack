@@ -1,4 +1,6 @@
 {
   "mongoURI": "mongodb+srv://admin:admin321@cluster-mern-stack-glliw.mongodb.net/test?retryWrites=true",
-  "jwtSecret": "MERNstack"
+  "jwtSecret": "MERNstack",
+  "githubClientID": "3040c880bb26afec5935",
+  "githubClientSecret": "3b570bca2670d1f62f88251e56dac68a29e27d2f"
 }
