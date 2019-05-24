@@ -151,7 +151,7 @@ route.delete('/', auth, async(req, res) => {
 });
 
 // @route   api/profile/experience
-// @desc    Updating experience
+// @desc    Add experience
 route.put('/experience', [auth, 
   [
     check('title', 'Titile is required')
@@ -238,7 +238,7 @@ route.delete(
 );
 
 // @route api/profile/education
-// @desc Updating education in profile
+// @desc Add education in profile
 route.put(
   '/education', 
   [
