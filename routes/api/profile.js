@@ -219,13 +219,13 @@ route.delete(
       const profile = await Profile.findOne({ user: req.user.id });
 
       // Get removing index
-      const removingItem = profile.experience.find( (item) => item.id === req.params.exp_id );
+      const removingExp = profile.experience.find( (item) => item.id === req.params.exp_id );
 
-      if (removingItem === undefined) {
+      if (removingExp === undefined) {
         return res.status(400).send('There are no such experience item for this user');
       }
       
-      profile.experience.splice(removingItem._id, 1);
+      profile.experience.splice(removingExp._id, 1);
 
       await profile.save();
 
@@ -289,6 +289,34 @@ route.put(
       const profile = await Profile.findOne({ user: req.user.id });
 
       profile.education.unshift(newEducation);
+
+      await profile.save();
+
+      res.json(profile);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// @route api/profile/education/:educ_id
+// @desc Deleting education item
+route.delete(
+  '/education/:educ_id',
+  auth,
+  async (req, res) => {
+    try {
+      const profile = await Profile.findOne({ user: req.user.id });
+
+      // Get item for deleting
+      const removingEducation = profile.education.find( (education) => education.id === req.params.educ_id );
+
+      if (removingEducation === undefined) {
+        return res.status(400).send('There are no such education item for such user');
+      }
+
+      profile.education.splice(removingEducation._id, 1);
 
       await profile.save();
 
